@@ -1,0 +1,1650 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Pastel Diary ✨</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* =============================================
+       CSS VARIABLES — Girlie Pastel Palette
+    ============================================= */
+    :root {
+      --pink:          #FFD1DC;
+      --lilac:         #E8D5F5;
+      --lavender:      #C9A9DD;
+      --purple:        #8B6BAB;
+      --deep:          #5A3D6E;
+      --rose:          #F7A8C4;
+
+      --bg-start:      #FFF0F5;
+      --bg-mid:        #F5EEFF;
+      --bg-end:        #EDE4FF;
+
+      /* Glassmorphism surfaces */
+      --glass:         rgba(255, 255, 255, 0.55);
+      --glass-border:  rgba(255, 255, 255, 0.75);
+      --glass-shadow:  0 8px 32px rgba(138, 100, 170, 0.18);
+      --glass-dark:    rgba(255, 255, 255, 0.08);
+
+      --text:          #4A2E6B;
+      --text-soft:     #9B76BC;
+      --text-muted:    #C4A4D8;
+
+      --radius:        20px;
+      --radius-sm:     12px;
+      --radius-pill:   50px;
+    }
+
+    body.dark-mode {
+      --bg-start:      #1A0F28;
+      --bg-mid:        #150E24;
+      --bg-end:        #100C1E;
+      --glass:         rgba(40, 20, 65, 0.6);
+      --glass-border:  rgba(180, 140, 220, 0.2);
+      --glass-shadow:  0 8px 32px rgba(0, 0, 0, 0.4);
+      --text:          #F0E2FF;
+      --text-soft:     #C4A4D8;
+      --text-muted:    #9B76BC;
+      --deep:          #D8C0F5;
+      --purple:        #B99DD4;
+    }
+
+    /* =============================================
+       RESET & BASE
+    ============================================= */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(145deg, var(--bg-start) 0%, var(--bg-mid) 50%, var(--bg-end) 100%);
+      background-attachment: fixed;
+      min-height: 100vh;
+      color: var(--text);
+      overflow-x: hidden;
+      transition: background 0.5s ease, color 0.3s ease;
+    }
+
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--lavender); border-radius: 10px; }
+
+    /* =============================================
+       LOADER
+    ============================================= */
+    #loader {
+      position: fixed; inset: 0;
+      background: linear-gradient(145deg, var(--bg-start), var(--bg-mid), var(--bg-end));
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      gap: 18px; z-index: 9999;
+      transition: opacity 0.7s ease;
+    }
+    #loader.hidden { opacity: 0; pointer-events: none; }
+
+    .loader-petals {
+      display: flex; gap: 8px;
+    }
+    .loader-petal {
+      font-size: 1.4rem;
+      animation: loaderPetal 1.2s ease-in-out infinite;
+    }
+    .loader-petal:nth-child(2) { animation-delay: 0.15s; }
+    .loader-petal:nth-child(3) { animation-delay: 0.3s; }
+    @keyframes loaderPetal {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.6; }
+      50%       { transform: translateY(-10px) scale(1.15); opacity: 1; }
+    }
+    .loader-text {
+      font-size: 0.85rem; font-weight: 300;
+      color: var(--text-soft); letter-spacing: 0.12em;
+      text-transform: lowercase;
+    }
+
+    /* =============================================
+       FALLING PETALS (Canvas-free, CSS only)
+    ============================================= */
+    .petal {
+      position: fixed;
+      top: -40px;
+      font-size: 1rem;
+      opacity: 0;
+      z-index: 1;
+      pointer-events: none;
+      user-select: none;
+      animation: petalFall linear infinite;
+    }
+    @keyframes petalFall {
+      0%   { opacity: 0; transform: translateY(-20px) rotate(0deg) scale(0.8); }
+      10%  { opacity: 0.5; }
+      85%  { opacity: 0.35; }
+      100% { opacity: 0; transform: translateY(110vh) rotate(540deg) scale(1.1); }
+    }
+
+    /* =============================================
+       TOP BAR
+    ============================================= */
+    .topbar {
+      position: fixed; top: 0; left: 0; right: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 24px;
+      z-index: 200;
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--glass-border);
+      transition: background 0.4s ease;
+    }
+
+    .topbar-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      color: var(--deep);
+      letter-spacing: 0.01em;
+      user-select: none;
+    }
+
+    .topbar-actions {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    /* Hamburger button */
+    #menu-btn {
+      width: 38px; height: 38px;
+      border: 1.5px solid rgba(201, 169, 221, 0.45);
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      gap: 4.5px; padding: 0;
+      transition: all 0.25s ease;
+      position: relative; z-index: 301;
+    }
+    #menu-btn:hover { background: rgba(255, 209, 220, 0.4); transform: scale(1.08); }
+
+    .hline {
+      width: 15px; height: 1.8px;
+      background: var(--deep);
+      border-radius: 2px;
+      transition: all 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+      transform-origin: center;
+    }
+    #menu-btn.open .hline:nth-child(1) { transform: translateY(6.3px) rotate(45deg); }
+    #menu-btn.open .hline:nth-child(2) { opacity: 0; transform: scaleX(0); }
+    #menu-btn.open .hline:nth-child(3) { transform: translateY(-6.3px) rotate(-45deg); }
+
+    /* Dark mode button */
+    #dark-btn {
+      width: 38px; height: 38px;
+      border: 1.5px solid rgba(201, 169, 221, 0.45);
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1rem;
+      display: flex; justify-content: center; align-items: center;
+      transition: all 0.25s ease;
+    }
+    #dark-btn:hover { transform: scale(1.1); background: rgba(255, 209, 220, 0.4); }
+
+    /* =============================================
+       RIGHT SIDE DRAWER
+    ============================================= */
+
+    /* Backdrop */
+    #drawer-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(74, 46, 107, 0.25);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      z-index: 298;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.38s ease;
+    }
+    #drawer-backdrop.show { opacity: 1; pointer-events: all; }
+
+    /* Drawer panel */
+    #side-drawer {
+      position: fixed;
+      top: 0; right: 0;
+      width: 300px; height: 100vh;
+      background: var(--glass);
+      backdrop-filter: blur(28px) saturate(180%);
+      -webkit-backdrop-filter: blur(28px) saturate(180%);
+      border-left: 1px solid var(--glass-border);
+      box-shadow: -12px 0 48px rgba(138, 100, 170, 0.2);
+      z-index: 299;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 28px;
+      gap: 0;
+      /* Slide in from right */
+      transform: translateX(100%);
+      transition: transform 0.42s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    #side-drawer.open { transform: translateX(0); }
+
+    /* Drawer header */
+    .drawer-header {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      padding: 20px 24px 16px;
+      border-bottom: 1px solid rgba(201, 169, 221, 0.2);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .drawer-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1rem; color: var(--deep);
+      opacity: 0.7; letter-spacing: 0.04em;
+    }
+
+    /* Drawer nav list */
+    .drawer-nav {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+    }
+
+    .drawer-link {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 14px 20px;
+      border-radius: var(--radius-sm);
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--text);
+      text-align: center;
+      transition: all 0.28s ease;
+      opacity: 0;
+      transform: translateX(20px);
+      letter-spacing: 0.01em;
+    }
+    /* Staggered animation when drawer opens */
+    #side-drawer.open .drawer-link { animation: drawerItemIn 0.4s ease forwards; }
+    #side-drawer.open .drawer-link:nth-child(1) { animation-delay: 0.06s; }
+    #side-drawer.open .drawer-link:nth-child(2) { animation-delay: 0.12s; }
+    #side-drawer.open .drawer-link:nth-child(3) { animation-delay: 0.18s; }
+    #side-drawer.open .drawer-link:nth-child(4) { animation-delay: 0.24s; }
+    #side-drawer.open .drawer-link:nth-child(5) { animation-delay: 0.30s; }
+    #side-drawer.open .drawer-link:nth-child(6) { animation-delay: 0.36s; }
+
+    @keyframes drawerItemIn {
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .drawer-link .dl-icon {
+      font-size: 1.1rem;
+      flex-shrink: 0;
+    }
+    .drawer-link .dl-label { flex: 1; }
+
+    .drawer-link:hover {
+      background: rgba(255, 209, 220, 0.35);
+      color: var(--deep);
+      transform: translateX(-4px);
+    }
+    .drawer-link.active {
+      background: linear-gradient(135deg, rgba(255, 209, 220, 0.5), rgba(232, 213, 245, 0.5));
+      color: var(--deep);
+      font-weight: 600;
+    }
+
+    .drawer-divider {
+      width: 60%; height: 1px;
+      background: rgba(201, 169, 221, 0.3);
+      margin: 8px 0;
+    }
+
+    /* Drawer footer */
+    .drawer-footer {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      padding: 16px 24px 24px;
+      text-align: center;
+      border-top: 1px solid rgba(201, 169, 221, 0.2);
+    }
+    .drawer-footer p {
+      font-size: 0.72rem; color: var(--text-muted);
+      letter-spacing: 0.04em;
+    }
+
+    /* =============================================
+       MAIN LAYOUT
+    ============================================= */
+    #app {
+      padding: 72px 20px 140px;
+      min-height: 100vh;
+      position: relative; z-index: 2;
+    }
+
+    /* Page transition flash */
+    #page-flash {
+      position: fixed; inset: 0;
+      background: var(--glass);
+      backdrop-filter: blur(4px);
+      z-index: 500;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.25s ease;
+    }
+    #page-flash.show { opacity: 1; }
+
+    /* =============================================
+       HERO — BERANDA
+    ============================================= */
+    #hero {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      min-height: calc(100vh - 212px);
+      text-align: center;
+      padding: 48px 16px 24px;
+      gap: 0;
+    }
+
+    .hero-avatar-ring {
+      width: 96px; height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--lilac));
+      padding: 3px;
+      margin-bottom: 22px;
+      box-shadow: 0 4px 24px rgba(201, 169, 221, 0.4);
+      animation: fadeDown 0.9s ease both;
+    }
+    .hero-avatar-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: var(--glass);
+      backdrop-filter: blur(8px);
+      display: flex; justify-content: center; align-items: center;
+      font-size: 2.6rem;
+      overflow: hidden;
+    }
+    .hero-avatar-inner img { width: 100%; height: 100%; object-fit: cover; }
+
+    .hero-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 3.2rem);
+      color: var(--deep);
+      margin-bottom: 8px;
+      line-height: 1.2;
+      animation: fadeDown 0.9s 0.15s ease both;
+    }
+
+    .hero-sub {
+      font-size: 0.88rem; font-weight: 300;
+      color: var(--text-soft);
+      letter-spacing: 0.06em;
+      margin-bottom: 6px;
+      animation: fadeUp 0.9s 0.3s ease both;
+    }
+
+    .hero-date {
+      font-size: 0.76rem; font-weight: 300;
+      color: var(--text-muted);
+      margin-bottom: 28px;
+      animation: fadeUp 0.9s 0.4s ease both;
+    }
+
+    /* Glass quote card */
+    .hero-quote {
+      max-width: 380px;
+      background: var(--glass);
+      backdrop-filter: blur(16px) saturate(160%);
+      -webkit-backdrop-filter: blur(16px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 20px 26px;
+      font-size: 0.87rem; font-style: italic; font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-soft);
+      box-shadow: var(--glass-shadow);
+      animation: fadeUp 0.9s 0.55s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* =============================================
+       CONTENT LOADER
+    ============================================= */
+    #content-loader {
+      max-width: 660px;
+      margin: 0 auto;
+    }
+
+    /* Section entry animation */
+    .section-enter {
+      animation: sectionIn 0.5s ease both;
+    }
+    @keyframes sectionIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section-header {
+      text-align: center;
+      padding: 28px 0 28px;
+    }
+    .section-header h2 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.9rem;
+      color: var(--deep);
+      margin-bottom: 6px;
+    }
+    .section-header p {
+      font-size: 0.82rem; font-weight: 300;
+      color: var(--text-soft); letter-spacing: 0.04em;
+    }
+
+    /* =============================================
+       GLASSMORPHISM CARDS
+    ============================================= */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(18px) saturate(160%);
+      -webkit-backdrop-filter: blur(18px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      box-shadow: var(--glass-shadow);
+      transition: all 0.3s ease;
+    }
+
+    /* Post cards */
+    .posts-grid { display: flex; flex-direction: column; gap: 14px; }
+
+    .post-card {
+      padding: 22px 24px;
+      cursor: pointer;
+      position: relative; overflow: hidden;
+    }
+    .post-card::after {
+      content: '';
+      position: absolute; left: 0; top: 16px; bottom: 16px;
+      width: 3px;
+      background: linear-gradient(to bottom, var(--rose), var(--lavender));
+      border-radius: 0 3px 3px 0;
+    }
+    .post-card:hover {
+      transform: translateY(-3px) scale(1.008);
+      box-shadow: 0 12px 40px rgba(138, 100, 170, 0.22);
+      background: rgba(255, 255, 255, 0.68);
+    }
+    body.dark-mode .post-card:hover { background: rgba(60, 30, 90, 0.55); }
+
+    .post-card-cat {
+      font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--purple); margin-bottom: 7px;
+    }
+    .post-card-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.15rem; color: var(--deep);
+      margin-bottom: 9px; line-height: 1.4;
+    }
+    .post-card-preview {
+      font-size: 0.82rem; font-weight: 300;
+      color: var(--text-soft); line-height: 1.7;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .post-card-date {
+      font-size: 0.7rem; color: var(--text-muted);
+      margin-top: 12px; letter-spacing: 0.04em;
+    }
+
+    /* =============================================
+       EMPTY / LOADING STATES
+    ============================================= */
+    .state-box {
+      text-align: center;
+      padding: 56px 20px;
+      color: var(--text-soft);
+    }
+    .state-box .state-icon { font-size: 2.8rem; margin-bottom: 14px; }
+    .state-box p { font-size: 0.88rem; font-weight: 300; line-height: 1.7; }
+
+    .dots-loader {
+      display: flex; justify-content: center; gap: 7px; margin-bottom: 14px;
+    }
+    .dots-loader span {
+      width: 7px; height: 7px;
+      background: var(--lavender);
+      border-radius: 50%;
+      animation: dotBounce 1.3s ease infinite;
+    }
+    .dots-loader span:nth-child(2) { animation-delay: 0.18s; }
+    .dots-loader span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes dotBounce {
+      0%, 80%, 100% { transform: scale(0.65); opacity: 0.4; }
+      40%            { transform: scale(1.1); opacity: 1; }
+    }
+
+    /* =============================================
+       TENTANG SAYA
+    ============================================= */
+    .about-wrap {
+      padding: 28px;
+      text-align: center;
+    }
+    .about-ava-ring {
+      width: 78px; height: 78px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--lilac));
+      padding: 3px; margin: 0 auto 18px;
+    }
+    .about-ava-inner {
+      width: 100%; height: 100%;
+      border-radius: 50%;
+      background: var(--glass);
+      display: flex; justify-content: center; align-items: center;
+      font-size: 2rem; overflow: hidden;
+    }
+    .about-ava-inner img { width: 100%; height: 100%; object-fit: cover; }
+    .about-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.7rem; color: var(--deep); margin-bottom: 6px;
+    }
+    .about-tag {
+      font-size: 0.84rem; font-weight: 300;
+      color: var(--text-soft); margin-bottom: 22px; line-height: 1.6;
+    }
+    .about-bio {
+      font-size: 0.88rem; font-weight: 300; line-height: 1.85;
+      color: var(--text);
+      background: rgba(255, 209, 220, 0.18);
+      border: 1px solid rgba(255, 209, 220, 0.4);
+      border-radius: var(--radius-sm);
+      padding: 18px 20px;
+      text-align: left;
+    }
+
+    /* =============================================
+       DAILY WORDS SECTION
+    ============================================= */
+    .daily-words-grid {
+      display: flex; flex-direction: column; gap: 12px;
+    }
+
+    .word-card {
+      padding: 18px 22px;
+      position: relative;
+    }
+    .word-card-msg {
+      font-size: 0.88rem; font-weight: 300;
+      line-height: 1.75; color: var(--text);
+      font-style: italic;
+      margin-bottom: 10px;
+    }
+    .word-card-msg::before { content: '"'; color: var(--lavender); font-size: 1.2rem; }
+    .word-card-msg::after  { content: '"'; color: var(--lavender); font-size: 1.2rem; }
+    .word-card-author {
+      font-size: 0.72rem; font-weight: 500;
+      color: var(--purple); letter-spacing: 0.06em;
+      text-align: right;
+    }
+    .word-card-date {
+      font-size: 0.68rem; color: var(--text-muted);
+      text-align: right; margin-top: 2px;
+    }
+
+    /* "Send a word" button */
+    .send-word-btn {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px; width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, rgba(255, 209, 220, 0.5), rgba(232, 213, 245, 0.5));
+      border: 1.5px dashed rgba(201, 169, 221, 0.6);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.85rem; font-weight: 500;
+      color: var(--purple);
+      transition: all 0.25s ease;
+      margin-top: 6px;
+    }
+    .send-word-btn:hover {
+      background: linear-gradient(135deg, rgba(255, 209, 220, 0.7), rgba(232, 213, 245, 0.7));
+      transform: translateY(-1px);
+    }
+
+    /* =============================================
+       GLASSMORPHISM MODAL
+    ============================================= */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(74, 46, 107, 0.3);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 400;
+      display: flex; justify-content: center; align-items: center;
+      padding: 20px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.35s ease;
+    }
+    .modal-backdrop.show {
+      opacity: 1; pointer-events: all;
+    }
+
+    .modal-box {
+      width: 100%; max-width: 560px;
+      max-height: 85vh; overflow-y: auto;
+      background: var(--glass);
+      backdrop-filter: blur(32px) saturate(200%);
+      -webkit-backdrop-filter: blur(32px) saturate(200%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius);
+      padding: 32px 28px;
+      box-shadow: 0 20px 64px rgba(90, 50, 130, 0.25);
+      position: relative;
+      transform: scale(0.92) translateY(20px);
+      transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-backdrop.show .modal-box {
+      transform: scale(1) translateY(0);
+    }
+
+    .modal-close {
+      position: absolute; top: 16px; right: 16px;
+      width: 30px; height: 30px;
+      border: 1px solid rgba(201, 169, 221, 0.4);
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%; cursor: pointer;
+      font-size: 0.9rem; color: var(--text-soft);
+      display: flex; justify-content: center; align-items: center;
+      transition: all 0.22s ease;
+    }
+    .modal-close:hover { transform: rotate(90deg); color: var(--deep); }
+
+    /* Post modal content */
+    .modal-cat {
+      font-size: 0.68rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--purple); margin-bottom: 8px;
+    }
+    .modal-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.65rem; color: var(--deep);
+      margin-bottom: 6px; line-height: 1.3;
+    }
+    .modal-date {
+      font-size: 0.74rem; font-weight: 300;
+      color: var(--text-muted); margin-bottom: 22px;
+    }
+    .modal-hr {
+      border: none;
+      border-top: 1px solid rgba(201, 169, 221, 0.3);
+      margin-bottom: 20px;
+    }
+    .modal-body {
+      font-size: 0.9rem; font-weight: 300;
+      line-height: 1.85; color: var(--text);
+      white-space: pre-wrap;
+    }
+
+    /* =============================================
+       DAILY WORDS SUBMIT MODAL
+    ============================================= */
+    .modal-heading {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.4rem; color: var(--deep);
+      margin-bottom: 6px; text-align: center;
+    }
+    .modal-sub {
+      font-size: 0.8rem; font-weight: 300;
+      color: var(--text-soft); text-align: center;
+      margin-bottom: 22px; line-height: 1.6;
+    }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block;
+      font-size: 0.75rem; font-weight: 600;
+      color: var(--text-soft);
+      text-transform: uppercase; letter-spacing: 0.07em;
+      margin-bottom: 6px;
+    }
+    .form-input,
+    .form-textarea {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid rgba(201, 169, 221, 0.4);
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.45);
+      backdrop-filter: blur(8px);
+      color: var(--text);
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.88rem; font-weight: 300;
+      outline: none;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .form-input::placeholder,
+    .form-textarea::placeholder { color: var(--text-muted); }
+    .form-input:focus,
+    .form-textarea:focus {
+      border-color: var(--lavender);
+      box-shadow: 0 0 0 3px rgba(201, 169, 221, 0.2);
+    }
+    .form-textarea { min-height: 110px; resize: vertical; line-height: 1.6; }
+
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      border: none; cursor: pointer;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, var(--rose), var(--lavender));
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.9rem; font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.28s ease;
+      box-shadow: 0 4px 18px rgba(201, 169, 221, 0.45);
+    }
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 7px 24px rgba(201, 169, 221, 0.55);
+    }
+    .btn-submit:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    .form-note {
+      font-size: 0.72rem; font-weight: 300;
+      color: var(--text-muted); text-align: center;
+      margin-top: 10px; line-height: 1.5;
+    }
+    .form-feedback {
+      font-size: 0.82rem;
+      text-align: center;
+      margin-top: 10px;
+      min-height: 20px;
+    }
+
+    /* =============================================
+       CUSTOM AUDIO PLAYER
+    ============================================= */
+    #audio-player {
+      position: fixed; bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      background: var(--glass);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-pill);
+      padding: 10px 20px 10px 14px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 8px 32px rgba(138, 100, 170, 0.2);
+      z-index: 100;
+      min-width: 230px; max-width: 320px;
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      transform: translateX(-50%) translateY(10px);
+    }
+    #audio-player.visible {
+      opacity: 1; pointer-events: all;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .player-btn {
+      width: 34px; height: 34px;
+      border-radius: 50%; border: none; cursor: pointer;
+      background: linear-gradient(135deg, var(--rose), var(--purple));
+      color: white; font-size: 0.85rem;
+      display: flex; justify-content: center; align-items: center;
+      transition: transform 0.22s ease;
+      box-shadow: 0 3px 12px rgba(138, 100, 170, 0.35);
+      flex-shrink: 0;
+    }
+    .player-btn:hover { transform: scale(1.12); }
+
+    .player-info { flex: 1; min-width: 0; }
+    .player-name {
+      font-size: 0.76rem; font-weight: 500;
+      color: var(--deep); white-space: nowrap;
+      overflow: hidden; text-overflow: ellipsis;
+    }
+    .player-state {
+      font-size: 0.68rem; font-weight: 300;
+      color: var(--text-soft);
+    }
+
+    /* Equalizer animation */
+    .eq {
+      display: flex; align-items: flex-end; gap: 2px;
+      height: 14px; flex-shrink: 0;
+    }
+    .eq-bar {
+      width: 3px; background: var(--lavender);
+      border-radius: 2px;
+      animation: eqAnim 0.8s ease infinite alternate;
+    }
+    .eq-bar:nth-child(1) { animation-duration: 0.6s; height: 6px; }
+    .eq-bar:nth-child(2) { animation-duration: 0.9s; height: 10px; }
+    .eq-bar:nth-child(3) { animation-duration: 0.7s; height: 8px; }
+    .eq-bar.paused { animation-play-state: paused; }
+    @keyframes eqAnim {
+      from { transform: scaleY(0.4); }
+      to   { transform: scaleY(1); }
+    }
+
+    /* =============================================
+       SCROLL TO TOP
+    ============================================= */
+    #scroll-top {
+      position: fixed; bottom: 90px; right: 22px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: var(--glass);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      box-shadow: var(--glass-shadow);
+      cursor: pointer; z-index: 100;
+      display: flex; justify-content: center; align-items: center;
+      font-size: 0.9rem; color: var(--purple);
+      opacity: 0; pointer-events: none;
+      transition: all 0.3s ease;
+    }
+    #scroll-top.show { opacity: 1; pointer-events: all; }
+    #scroll-top:hover { transform: translateY(-2px); }
+
+    /* =============================================
+       RESPONSIVE
+    ============================================= */
+    @media (max-width: 420px) {
+      #side-drawer { width: 100%; border-left: none; border-radius: 0; }
+      .drawer-link { font-size: 1.05rem; padding: 13px 16px; }
+      .modal-box { padding: 24px 18px; }
+      .hero-title { font-size: 1.9rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Page flash transition -->
+  <div id="page-flash"></div>
+
+  <!-- =============================================
+       LOADER
+  ============================================= -->
+  <div id="loader">
+    <div class="loader-petals">
+      <span class="loader-petal">🌸</span>
+      <span class="loader-petal">✨</span>
+      <span class="loader-petal">🌷</span>
+    </div>
+    <p class="loader-text">loading my little world...</p>
+  </div>
+
+  <!-- =============================================
+       FALLING PETALS (injected via JS)
+  ============================================= -->
+
+  <!-- =============================================
+       TOP BAR
+  ============================================= -->
+  <header class="topbar">
+    <span class="topbar-logo">✨ My Pastel Diary</span>
+    <div class="topbar-actions">
+      <button id="dark-btn" aria-label="Toggle dark mode">🌙</button>
+      <button id="menu-btn" aria-label="Buka menu" aria-expanded="false" aria-controls="side-drawer">
+        <span class="hline"></span>
+        <span class="hline"></span>
+        <span class="hline"></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- =============================================
+       RIGHT SIDE DRAWER
+  ============================================= -->
+  <div id="drawer-backdrop" aria-hidden="true"></div>
+
+  <nav id="side-drawer" aria-label="Navigasi" aria-hidden="true" role="dialog">
+    <div class="drawer-header">
+      <span class="drawer-logo">my pastel diary</span>
+    </div>
+
+    <div class="drawer-nav">
+      <button class="drawer-link active" data-page="beranda">
+        <span class="dl-icon">🏠</span>
+        <span class="dl-label">Beranda</span>
+      </button>
+      <button class="drawer-link" data-page="tentang">
+        <span class="dl-icon">🌸</span>
+        <span class="dl-label">Tentang Saya</span>
+      </button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-link" data-page="catatan">
+        <span class="dl-icon">📖</span>
+        <span class="dl-label">Catatan Hidup</span>
+      </button>
+      <button class="drawer-link" data-page="refleksi">
+        <span class="dl-icon">🎵</span>
+        <span class="dl-label">Favorite Things</span>
+      </button>
+      <button class="drawer-link" data-page="opini">
+        <span class="dl-icon">🇷🇺</span>
+        <span class="dl-label">Journey Language</span>
+      </button>
+      <div class="drawer-divider"></div>
+      <button class="drawer-link" data-page="daily">
+        <span class="dl-icon">💌</span>
+        <span class="dl-label">Daily Words</span>
+      </button>
+      <div class="drawer-divider"></div>
+      <a class="drawer-link"
+         href="https://www.instagram.com/arnnfh?igsh=YTR1ZjN1NnN4azFh"
+         target="_blank"
+         rel="noopener noreferrer"
+         style="text-decoration:none;">
+        <span class="dl-icon">📸</span>
+        <span class="dl-label">Instagram</span>
+      </a>
+    </div>
+
+    <div class="drawer-footer">
+      <p>made with 💜 & promt Arin</p>
+    </div>
+  </nav>
+
+  <!-- =============================================
+       MAIN APP
+  ============================================= -->
+  <main id="app">
+
+    <!-- HERO — Beranda -->
+    <section id="hero">
+      <div class="hero-avatar-ring">
+        <div class="hero-avatar-inner" id="hero-avatar">
+          <img
+            src="https://raw.githubusercontent.com/Arin-ops/diarypastel-/7de236d7f5179f22919bcd46cee940810c049e2e/IMG_20260611_163607.png"
+            alt="Foto profil"
+            onerror="this.style.display='none'; this.parentElement.innerHTML='<span>N</span>';"
+          />
+        </div>
+      </div>
+      <h1 class="hero-title">My Pastel Diary</h1>
+      <p class="hero-sub">my little world of quotes &amp; dreams ✨</p>
+      <p class="hero-date" id="hero-date"></p>
+      <div class="hero-quote glass-card" id="hero-quote">
+        "Some stories are meant to be written, not told."
+      </div>
+    </section>
+
+    <!-- Dynamic content loader -->
+    <div id="content-loader" style="display:none;"></div>
+
+  </main>
+
+  <!-- =============================================
+       POST DETAIL MODAL
+  ============================================= -->
+  <div class="modal-backdrop" id="post-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-box">
+      <button class="modal-close" id="post-modal-close" aria-label="Tutup">✕</button>
+      <div class="modal-cat"  id="modal-cat"></div>
+      <h2 class="modal-title" id="modal-title"></h2>
+      <p  class="modal-date"  id="modal-date"></p>
+      <hr class="modal-hr" />
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <!-- =============================================
+       DAILY WORDS SUBMIT MODAL
+  ============================================= -->
+  <div class="modal-backdrop" id="words-modal" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-box" style="max-width:480px;">
+      <button class="modal-close" id="words-modal-close" aria-label="Tutup">✕</button>
+      <h3 class="modal-heading">💌 Kirim Pesanmu</h3>
+      <p class="modal-sub">
+        Pesan kamu akan ditinjau dulu sebelum tampil.<br>
+        Boleh anonim, nggak perlu nama asli. 🌸
+      </p>
+
+      <div class="form-group">
+        <label class="form-label" for="word-author">Nama / Panggilan</label>
+        <input class="form-input" id="word-author" type="text"
+          placeholder="anonim / nama panggilan kamu" maxlength="40" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="word-message">Pesanmu</label>
+        <textarea class="form-textarea" id="word-message"
+          placeholder="tulis sesuatu yang hangat di sini... 🌷"
+          maxlength="300"></textarea>
+      </div>
+
+      <button class="btn-submit" id="word-submit-btn" onclick="submitWord()">
+        Kirim Pesan ✨
+      </button>
+      <p class="form-note">
+        Tidak ada akun yang dibutuhkan. Pesanmu anonim dan akan dimoderasi oleh penulis blog ini.
+      </p>
+      <div class="form-feedback" id="word-feedback"></div>
+    </div>
+  </div>
+
+  <!-- =============================================
+       CUSTOM AUDIO PLAYER
+  ============================================= -->
+  <div id="audio-player" aria-label="Audio player">
+    <button class="player-btn" id="player-toggle" aria-label="Play / Pause">▶</button>
+    <div class="player-info">
+      <div class="player-name" id="player-name">Background Music</div>
+      <div class="player-state" id="player-state">tap ▶ to play</div>
+    </div>
+    <div class="eq" id="eq-anim">
+      <div class="eq-bar paused"></div>
+      <div class="eq-bar paused"></div>
+      <div class="eq-bar paused"></div>
+    </div>
+  </div>
+  <audio id="bg-audio" loop></audio>
+
+  <!-- Scroll to top -->
+  <button id="scroll-top" aria-label="Scroll ke atas" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+  <!-- =============================================
+       FIREBASE & APP LOGIC
+  ============================================= -->
+  <script type="module">
+    import { initializeApp }           from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, collection,
+             query, where, orderBy,
+             getDocs, getDoc,
+             addDoc, doc,
+             serverTimestamp }         from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+    // ===== FIREBASE CONFIG =====
+    // Konfigurasi Firebase dipisahkan ke file terpisah agar lebih rapi.
+    // Pastikan firebase-config.js ada di folder yang sama dengan index.html.
+    import { firebaseConfig } from "./firebase-config.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    // ===== STATE =====
+    let currentPage = 'beranda';
+    let isPlaying   = false;
+    let isDark      = localStorage.getItem('darkMode') === 'on';
+
+    // ===== DOM REFS =====
+    const loader       = document.getElementById('loader');
+    const hero         = document.getElementById('hero');
+    const contentArea  = document.getElementById('content-loader');
+    const pageFlash    = document.getElementById('page-flash');
+    const drawer       = document.getElementById('side-drawer');
+    const backdrop     = document.getElementById('drawer-backdrop');
+    const menuBtn      = document.getElementById('menu-btn');
+    const darkBtn      = document.getElementById('dark-btn');
+    const heroDate     = document.getElementById('hero-date');
+    const heroQuote    = document.getElementById('hero-quote');
+    const postModal    = document.getElementById('post-modal');
+    const wordsModal   = document.getElementById('words-modal');
+    const audioEl      = document.getElementById('bg-audio');
+    const audioPlayer  = document.getElementById('audio-player');
+    const playerToggle = document.getElementById('player-toggle');
+    const playerName   = document.getElementById('player-name');
+    const playerState  = document.getElementById('player-state');
+    const eqAnim       = document.getElementById('eq-anim');
+    const scrollTopBtn = document.getElementById('scroll-top');
+
+    // ===== DARK MODE =====
+    if (isDark) { document.body.classList.add('dark-mode'); darkBtn.textContent = '☀️'; }
+    darkBtn.addEventListener('click', () => {
+      isDark = !isDark;
+      document.body.classList.toggle('dark-mode', isDark);
+      darkBtn.textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('darkMode', isDark ? 'on' : 'off');
+    });
+
+    // ===== HERO DATE =====
+    heroDate.textContent = new Date().toLocaleDateString('id-ID', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+    });
+
+    // ===== DYNAMIC QUOTES =====
+    const quotes = [
+      '"Some stories are meant to be written, not told."',
+      '"Kata-kata adalah cat dari pikiranku, dan diary ini adalah kanvasku."',
+      '"Di antara baris-baris ini, tersembunyi aku yang sebenarnya."',
+      '"Setiap kata di sini ditulis dengan sepotong hatiku."',
+      '"Hidup terlalu singkat untuk tidak menulis perasaanmu."'
+    ];
+    heroQuote.textContent = quotes[Math.floor(Math.random() * quotes.length)];
+
+    // ===== FALLING PETALS =====
+    const petalEmojis = ['🌸','🌷','✨','💮','🌺','🌼','💜','🍃'];
+
+    function spawnPetals() {
+      document.querySelectorAll('.petal').forEach(p => p.remove());
+      const count = window.innerWidth < 480 ? 8 : 14;
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('div');
+        p.className = 'petal';
+        p.setAttribute('aria-hidden', 'true');
+        p.textContent = petalEmojis[Math.floor(Math.random() * petalEmojis.length)];
+        p.style.left              = (Math.random() * 100) + 'vw';
+        p.style.fontSize          = (0.65 + Math.random() * 0.65) + 'rem';
+        p.style.opacity           = 0;
+        p.style.animationDuration = (8 + Math.random() * 10) + 's';
+        p.style.animationDelay    = (Math.random() * 12) + 's';
+        document.body.appendChild(p);
+      }
+    }
+    spawnPetals();
+    setInterval(spawnPetals, 18000);
+
+    // ===== DRAWER =====
+    function openDrawer() {
+      drawer.classList.add('open');
+      backdrop.classList.add('show');
+      menuBtn.classList.add('open');
+      menuBtn.setAttribute('aria-expanded', 'true');
+      drawer.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeDrawer() {
+      drawer.classList.remove('open');
+      backdrop.classList.remove('show');
+      menuBtn.classList.remove('open');
+      menuBtn.setAttribute('aria-expanded', 'false');
+      drawer.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+
+    menuBtn.addEventListener('click', () => {
+      drawer.classList.contains('open') ? closeDrawer() : openDrawer();
+    });
+    backdrop.addEventListener('click', closeDrawer);
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape') { closeDrawer(); closePostModal(); closeWordsModal(); }
+    });
+
+    // ===== NAVIGATION =====
+    document.querySelectorAll('.drawer-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const page = link.dataset.page;
+        closeDrawer();
+        if (page !== currentPage) navigateTo(page);
+      });
+    });
+
+    function setActiveLink(page) {
+      document.querySelectorAll('.drawer-link').forEach(l =>
+        l.classList.toggle('active', l.dataset.page === page)
+      );
+    }
+
+    function flash(cb) {
+      pageFlash.classList.add('show');
+      setTimeout(() => {
+        cb();
+        setTimeout(() => pageFlash.classList.remove('show'), 200);
+      }, 220);
+    }
+
+    async function navigateTo(page) {
+      currentPage = page;
+      setActiveLink(page);
+      flash(async () => {
+        if (page === 'beranda') {
+          showHero();
+        } else if (page === 'tentang') {
+          await showTentang();
+        } else if (page === 'daily') {
+          await showDailyWords();
+        } else {
+          const map = { catatan: 'Catatan Hidup', refleksi: 'Favorite Things', opini: 'Journey Language' };
+          await showPosts(map[page], page);
+        }
+      });
+    }
+
+    // ===== SHOW HERO =====
+    function showHero() {
+      hero.style.display = 'flex';
+      contentArea.style.display = 'none';
+      contentArea.innerHTML = '';
+    }
+
+    // ===== ESCAPE HTML =====
+    function esc(s) {
+      if (!s) return '';
+      return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+              .replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+    }
+
+    // ===== FORMAT DATE =====
+    function fmtDate(ts, opts) {
+      if (!ts) return '';
+      return new Date(ts.seconds * 1000).toLocaleDateString('id-ID', opts);
+    }
+
+    // ===== TENTANG SAYA =====
+    async function showTentang() {
+      hero.style.display = 'none';
+      contentArea.style.display = 'block';
+      contentArea.innerHTML = renderLoading('Memuat profil...');
+
+      let name = 'Arin', tagline = 'I write to understand myself. 🌸';
+      let bio  = 'Halo! Aku Arin.\n\nSuka baca buku, dengerin mbak olivia nyanyi, dan nulis hal-hal kecil yang biasanya gak bisa aku omongin langsung.\n\nBlog ini adalah sudut kecilku — tempat aku menaruh pikiran, perasaan, dan cerita yang terlalu sayang untuk diabaikan.\n\nKalau kamu sampai sejauh ini, terima kasih sudah mampir. 💜';
+
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'about'));
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.name)    name    = d.name;
+          if (d.tagline) tagline = d.tagline;
+          if (d.bio)     bio     = d.bio;
+        }
+      } catch (_) {}
+
+      contentArea.innerHTML = `
+        <div class="section-header"><h2>🌸 Tentang Saya</h2><p>orang di balik diary ini</p></div>
+        <div class="glass-card about-wrap section-enter">
+          <div class="about-ava-ring">
+            <div class="about-ava-inner">
+              <img
+                src="https://raw.githubusercontent.com/Arin-ops/diarypastel-/7de236d7f5179f22919bcd46cee940810c049e2e/IMG_20260611_163607.png"
+                alt="Foto profil"
+                onerror="this.style.display='none'; this.parentElement.innerHTML='<span>N</span>';"
+              />
+            </div>
+          </div>
+          <div class="about-name">${esc(name)}</div>
+          <div class="about-tag">${esc(tagline)}</div>
+          <div class="about-bio">${esc(bio).replace(/\n/g,'<br>')}</div>
+        </div>
+      `;
+    }
+
+    // ===== SHOW POSTS =====
+    async function showPosts(category, pageId) {
+      hero.style.display = 'none';
+      contentArea.style.display = 'block';
+
+      const meta = {
+        catatan:  { emoji: '📖', label: 'Catatan Hidup',    sub: 'cerita harian yang aku simpan di sini' },
+        refleksi: { emoji: '🎵', label: 'Favorite Things',  sub: 'lagu, buku, dan kata-kata yang lagi menemani hariku' },
+        opini:    { emoji: '🇷🇺', label: 'Journey Language', sub: 'kosakata baru hasil latihan jurnal Bahasa Rusia' }
+      };
+      const m = meta[pageId] || { emoji: '📄', label: category, sub: '' };
+
+      contentArea.innerHTML = `
+        <div class="section-header"><h2>${m.emoji} ${m.label}</h2><p>${m.sub}</p></div>
+        ${renderLoading('memuat tulisan...')}
+      `;
+
+      try {
+        const q = query(collection(db, 'posts'),
+          where('kategori', '==', category), orderBy('createdAt', 'desc'));
+        const snap = await getDocs(q);
+        const posts = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderPosts(posts, m);
+      } catch (err) {
+        console.error(err);
+        renderPosts([], m, true);
+      }
+    }
+
+    function renderPosts(posts, m, isErr = false) {
+      if (isErr) {
+        contentArea.innerHTML = `
+          <div class="section-header"><h2>${m.emoji} ${m.label}</h2><p>${m.sub}</p></div>
+          <div class="state-box"><div class="state-icon">⚠️</div><p>Gagal memuat tulisan.<br>Coba lagi nanti.</p></div>`;
+        return;
+      }
+      if (posts.length === 0) {
+        contentArea.innerHTML = `
+          <div class="section-header"><h2>${m.emoji} ${m.label}</h2><p>${m.sub}</p></div>
+          <div class="state-box"><div class="state-icon">🌿</div><p>Belum ada tulisan di sini.<br>Nantikan cerita baruku ya! 🌸</p></div>`;
+        return;
+      }
+
+      const cards = posts.map((post, i) => `
+        <div class="glass-card post-card section-enter"
+             style="animation-delay:${i * 0.07}s"
+             data-id="${post.id}" tabindex="0" role="button"
+             aria-label="Baca: ${esc(post.judul)}">
+          <div class="post-card-cat">${esc(post.kategori)}</div>
+          <div class="post-card-title">${esc(post.judul)}</div>
+          <div class="post-card-preview">${esc((post.konten || '').slice(0, 160))}${post.konten?.length > 160 ? '…' : ''}</div>
+          <div class="post-card-date">${fmtDate(post.createdAt, {day:'numeric', month:'long', year:'numeric'})}</div>
+        </div>
+      `).join('');
+
+      contentArea.innerHTML = `
+        <div class="section-header"><h2>${m.emoji} ${m.label}</h2><p>${m.sub}</p></div>
+        <div class="posts-grid">${cards}</div>
+      `;
+
+      contentArea.querySelectorAll('.post-card').forEach(card => {
+        const open = () => {
+          const post = posts.find(p => p.id === card.dataset.id);
+          if (post) openPostModal(post);
+        };
+        card.addEventListener('click', open);
+        card.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); } });
+      });
+    }
+
+    // ===== DAILY WORDS =====
+    async function showDailyWords() {
+      hero.style.display = 'none';
+      contentArea.style.display = 'block';
+      contentArea.innerHTML = `
+        <div class="section-header"><h2>💌 Daily Words</h2><p>pesan hangat dari para pembaca</p></div>
+        ${renderLoading('memuat pesan...')}
+      `;
+
+      try {
+        // HANYA ambil pesan yang sudah di-approve
+        const q = query(collection(db, 'words'),
+          where('status', '==', 'approved'), orderBy('timestamp', 'desc'));
+        const snap = await getDocs(q);
+        const words = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderWords(words);
+      } catch (err) {
+        console.error(err);
+        renderWords([], true);
+      }
+    }
+
+    function renderWords(words, isErr = false) {
+      if (isErr) {
+        contentArea.innerHTML = `
+          <div class="section-header"><h2>💌 Daily Words</h2><p>pesan hangat dari para pembaca</p></div>
+          <div class="state-box"><div class="state-icon">⚠️</div><p>Gagal memuat pesan. Coba lagi nanti.</p></div>
+          <button class="send-word-btn" onclick="openWordsModal()">✉️ Kirim pesanmu</button>
+        `;
+        return;
+      }
+
+      const cards = words.length === 0 ? `
+        <div class="state-box">
+          <div class="state-icon">🌷</div>
+          <p>Belum ada pesan yang ditampilkan.<br>Jadilah yang pertama! 💌</p>
+        </div>
+      ` : words.map((w, i) => `
+        <div class="glass-card word-card section-enter" style="animation-delay:${i * 0.07}s">
+          <div class="word-card-msg">${esc(w.message)}</div>
+          <div class="word-card-author">— ${esc(w.author || 'anonim')}</div>
+          <div class="word-card-date">${fmtDate(w.timestamp, {day:'numeric', month:'short', year:'numeric'})}</div>
+        </div>
+      `).join('');
+
+      contentArea.innerHTML = `
+        <div class="section-header"><h2>💌 Daily Words</h2><p>pesan hangat dari para pembaca</p></div>
+        <div class="daily-words-grid">${cards}</div>
+        <button class="send-word-btn" style="margin-top:18px;" onclick="openWordsModal()">
+          ✉️ Kirim pesanmu
+        </button>
+      `;
+    }
+
+    // ===== WORDS MODAL =====
+    window.openWordsModal = function() {
+      wordsModal.classList.add('show');
+      wordsModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+      document.getElementById('word-feedback').innerHTML = '';
+    };
+    function closeWordsModal() {
+      wordsModal.classList.remove('show');
+      wordsModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('words-modal-close').addEventListener('click', closeWordsModal);
+    wordsModal.addEventListener('click', e => { if (e.target === wordsModal) closeWordsModal(); });
+
+    // ===== SUBMIT WORD =====
+    /**
+     * Mengirim pesan ke Firestore collection "words"
+     * dengan status 'pending' agar perlu di-approve dulu oleh admin.
+     * Field: { message, author, status: 'pending', timestamp }
+     */
+    window.submitWord = async function() {
+      const author  = document.getElementById('word-author').value.trim() || 'anonim';
+      const message = document.getElementById('word-message').value.trim();
+      const feedback = document.getElementById('word-feedback');
+      const btn     = document.getElementById('word-submit-btn');
+
+      if (!message) {
+        feedback.innerHTML = '<span style="color:#E07B8B">⚠️ Pesannya kosong nih~</span>';
+        return;
+      }
+      if (message.length < 5) {
+        feedback.innerHTML = '<span style="color:#E07B8B">⚠️ Pesan minimal 5 karakter.</span>';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Mengirim...';
+
+      try {
+        await addDoc(collection(db, 'words'), {
+          message,
+          author,
+          status:    'pending',     // Wajib pending — admin harus approve dulu
+          timestamp: serverTimestamp()
+        });
+
+        feedback.innerHTML = '<span style="color:#6DBF8A">✅ Pesanmu terkirim! Nantikan setelah moderasi ya 🌸</span>';
+        document.getElementById('word-author').value  = '';
+        document.getElementById('word-message').value = '';
+
+        // Tutup modal otomatis setelah 2.5 detik
+        setTimeout(closeWordsModal, 2500);
+      } catch (err) {
+        console.error(err);
+        feedback.innerHTML = `<span style="color:#E07B8B">❌ Gagal mengirim: ${esc(err.message)}</span>`;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Kirim Pesan ✨';
+      }
+    };
+
+    // ===== POST MODAL =====
+    function openPostModal(post) {
+      document.getElementById('modal-cat').textContent   = post.kategori || '';
+      document.getElementById('modal-title').textContent = post.judul    || '';
+      document.getElementById('modal-date').textContent  =
+        fmtDate(post.createdAt, { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+      document.getElementById('modal-body').textContent  = post.konten   || '';
+      postModal.classList.add('show');
+      postModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden';
+    }
+    function closePostModal() {
+      postModal.classList.remove('show');
+      postModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = '';
+    }
+    document.getElementById('post-modal-close').addEventListener('click', closePostModal);
+    postModal.addEventListener('click', e => { if (e.target === postModal) closePostModal(); });
+
+    // ===== AUDIO PLAYER =====
+
+    // Preload ringan agar durasi bisa dibaca tanpa download penuh
+    audioEl.preload = 'metadata';
+
+    /**
+     * Konversi berbagai format URL menjadi URL audio yang bisa diputar langsung.
+     *
+     * Format yang didukung:
+     *  1. MP3/OGG langsung          → dipakai apa adanya
+     *  2. Google Drive /file/d/ID/  → konversi ke direct stream
+     *  3. Google Drive /open?id=ID  → konversi ke direct stream
+     *
+     * CATATAN: Google Drive kadap tetap diblokir CORS.
+     * URL paling andal = file MP3 dari hosting biasa (Netlify, GitHub Pages, dll).
+     */
+    function resolveAudioUrl(raw) {
+      const url = raw.trim();
+      // Pola: /file/d/FILE_ID/view  atau  /file/d/FILE_ID/preview
+      const match1 = url.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+      if (match1) {
+        return `https://drive.google.com/uc?export=download&id=${match1[1]}`;
+      }
+      // Pola: /open?id=FILE_ID
+      const match2 = url.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+      if (match2) {
+        return `https://drive.google.com/uc?export=download&id=${match2[1]}`;
+      }
+      // URL biasa — langsung pakai
+      return url;
+    }
+
+    async function loadMusic() {
+      // Player SELALU muncul supaya user tahu ada fitur ini
+      audioPlayer.classList.add('visible');
+      playerName.textContent  = 'Background Music';
+      playerState.textContent = 'memuat...';
+
+      try {
+        const snap = await getDoc(doc(db, 'settings', 'music'));
+
+        if (!snap.exists()) {
+          playerState.textContent = 'belum ada musik';
+          playerToggle.disabled = true;
+          return;
+        }
+
+        const d = snap.data();
+
+        if (!d.url || !d.url.trim()) {
+          playerState.textContent = 'URL belum diisi di admin';
+          playerToggle.disabled = true;
+          return;
+        }
+
+        const finalUrl = resolveAudioUrl(d.url);
+        audioEl.src             = finalUrl;
+        playerName.textContent  = d.title || 'Background Music';
+        playerState.textContent = 'tap ▶ to play';
+        playerToggle.disabled   = false;
+
+      } catch (err) {
+        console.warn('loadMusic error:', err);
+        playerState.textContent = 'gagal memuat data';
+        playerToggle.disabled = true;
+      }
+    }
+
+    // Update tampilan tombol & equalizer
+    function setPlaying(playing) {
+      isPlaying = playing;
+      playerToggle.textContent = playing ? '⏸' : '▶';
+      playerState.textContent  = playing ? 'now playing ♪' : 'tap ▶ to play';
+      eqAnim.querySelectorAll('.eq-bar').forEach(b =>
+        b.classList.toggle('paused', !playing)
+      );
+    }
+
+    playerToggle.addEventListener('click', async () => {
+      // Jika src kosong atau sama dengan URL halaman ini, stop
+      if (!audioEl.src || audioEl.src === location.href) {
+        playerState.textContent = 'sumber audio belum ada';
+        return;
+      }
+
+      if (isPlaying) {
+        audioEl.pause();
+        setPlaying(false);
+        return;
+      }
+
+      // Coba play
+      playerState.textContent = 'loading...';
+      try {
+        await audioEl.play();
+        setPlaying(true);
+      } catch (err) {
+        console.error('play() error:', err.name, err.message);
+        if (err.name === 'NotAllowedError') {
+          // Browser butuh interaksi user dulu (normal di Chrome mobile)
+          playerState.textContent = 'klik sekali lagi ▶';
+        } else if (err.name === 'NotSupportedError') {
+          playerState.textContent = 'format tidak didukung';
+        } else {
+          playerState.textContent = 'gagal — coba URL lain';
+        }
+        setPlaying(false);
+      }
+    });
+
+    // Error pada elemen <audio> sendiri (URL salah, file tidak ada, dll)
+    audioEl.addEventListener('error', () => {
+      const code = audioEl.error?.code;
+      const msg  = {
+        1: 'dimuat ulang...',
+        2: 'koneksi jaringan putus',
+        3: 'file audio rusak/invalid',
+        4: 'format tidak dikenali — coba MP3 biasa'
+      };
+      playerState.textContent = msg[code] || 'error memuat audio';
+      setPlaying(false);
+    });
+
+    // Saat audio selesai diputar (loop sudah off)
+    audioEl.addEventListener('ended', () => setPlaying(false));
+
+    // ===== SCROLL TO TOP =====
+    window.addEventListener('scroll', () => {
+      scrollTopBtn.classList.toggle('show', window.scrollY > 300);
+    });
+
+    // ===== LOADING TEMPLATE =====
+    function renderLoading(label = 'memuat...') {
+      return `
+        <div class="state-box">
+          <div class="dots-loader"><span></span><span></span><span></span></div>
+          <p>${label}</p>
+        </div>`;
+    }
+
+    // ===== INIT =====
+    async function init() {
+      setTimeout(() => {
+        loader.classList.add('hidden');
+        setTimeout(() => { loader.style.display = 'none'; }, 700);
+      }, 1400);
+      await loadMusic();
+    }
+
+    init();
+  </script>
+</body>
+</html>
